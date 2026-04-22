@@ -1,0 +1,36 @@
+@model IEnumerable<TSD2491_oblig1_031688.Models.Loan>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+<h2>Aktive Utlån</h2>
+<p>
+    @*<a asp-action="Create">Create New</a>*@
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Enhet</th>
+            <th>Type</th>
+            <th>Student</th>
+            <th>Utlånsdato</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>@item.Device?.Name</td>
+            <td>@item.Device?.DeviceType</td>
+            <td>@item.Student?.FirstName @item.Student?.LastName</td>
+            <td>@item.LoanDate.ToShortDateString()</td>
+            <td>
+                @*<a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>*@
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
