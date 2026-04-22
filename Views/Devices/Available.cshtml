@@ -1,0 +1,36 @@
+@model IEnumerable<TSD2491_oblig1_031688.Models.Device>
+
+@{
+    ViewData["Title"] = "Tilgjengelige enheter";
+}
+
+<h1>Tilgjengelige enheter</h1>
+
+@if (!Model.Any())
+{
+    <p><strong>Ingen enheter er tilgjengelige for utlån akkurat nå.</strong></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Navn</th>
+                <th>Type</th>
+                <th>Modell</th>
+                <th>Spesifikasjoner</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var device in Model)
+        {
+            <tr>
+                <td>@device.Name</td>
+                <td>@device.DeviceType</td>
+                <td>@device.ModelName</td>
+                <td>@device.Specifications</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

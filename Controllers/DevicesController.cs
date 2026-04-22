@@ -26,6 +26,17 @@ namespace TSD2491_oblig1_031688.Controllers
             return View(await _context.Devices.ToListAsync());
         }
 
+
+        public async Task<IActionResult> Available()
+        {
+            var availableDevices = await _context.Devices
+                .Where(d => d.IsAvailable == true)
+                .ToListAsync();
+
+            return View(availableDevices);
+        }
+
+
         // GET: Devices/Details/5
         public async Task<IActionResult> Details(int? id)
         {
