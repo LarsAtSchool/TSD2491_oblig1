@@ -29,8 +29,6 @@ namespace TSD2491_oblig1_031688.Controllers
 
         public IActionResult Create()
         {
-
-
             ViewData["DeviceId"] = new SelectList(
                 _context.Devices
                     .Where(d => d.IsAvailable == true)
@@ -42,7 +40,6 @@ namespace TSD2491_oblig1_031688.Controllers
                 "Id",
                 "Display"
             );
-
 
             ViewData["StudentId"] = new SelectList(
                 _context.Students
@@ -56,36 +53,76 @@ namespace TSD2491_oblig1_031688.Controllers
                 "Display"
             );
 
-
             return View();
         }
 
-
+        // POST Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,LoanDate,DeviceId,StudentId")] Loan loan)
         {
-            if (ModelState.IsValid)
+            // Hent device og student
+            var device = await _context.Devices.FindAsync(loan.DeviceId);
+            var student = await _context.Students.FindAsync(loan.StudentId);
+
+            // --- FORRETNINGSREGLER (4d) ---
+
+            // Regel 1: Enheten må være tilgjengelig
+            if (device == null || device.IsAvailable == false)
             {
-                _context.Add(loan);
-
-                // Hent device og student
-                var device = await _context.Devices.FindAsync(loan.DeviceId);
-                var student = await _context.Students.FindAsync(loan.StudentId);
-
-                // Oppdater status
-                if (device != null)
-                    device.IsAvailable = false;
-
-                if (student != null)
-                    student.HasActiveLoan = true;
-
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError("DeviceId", "Denne enheten er ikke tilgjengelig for utlån.");
             }
 
-            return View(loan);
+            // Regel 2: Studenten kan ikke ha aktivt lån
+            if (student == null || student.HasActiveLoan == true)
+            {
+                ModelState.AddModelError("StudentId", "Denne studenten har allerede et aktivt lån.");
+            }
+
+            // Hvis noen regler feiler → vis feilmelding og stopp
+            if (!ModelState.IsValid)
+            {
+                // Fyll dropdowns på nytt
+                ViewData["DeviceId"] = new SelectList(
+                    _context.Devices
+                        .Where(d => d.IsAvailable == true)
+                        .Select(d => new
+                        {
+                            d.Id,
+                            Display = d.Name + " (" + d.DeviceType + ")"
+                        }),
+                    "Id",
+                    "Display",
+                    loan.DeviceId
+                );
+
+                ViewData["StudentId"] = new SelectList(
+                    _context.Students
+                        .Where(s => s.HasActiveLoan == false)
+                        .Select(s => new
+                        {
+                            s.Id,
+                            Display = s.FirstName + " " + s.LastName
+                        }),
+                    "Id",
+                    "Display",
+                    loan.StudentId
+                );
+
+                return View(loan);
+            }
+
+            // --- HVIS ALT ER OK → OPPRETT LÅN (4c) ---
+
+            _context.Add(loan);
+
+            device.IsAvailable = false;
+            student.HasActiveLoan = true;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
+
 
 
 
